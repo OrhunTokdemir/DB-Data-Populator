@@ -25,12 +25,14 @@ public class PostgreManager implements DbManager {
         return connection;
     }
 
+    @SuppressWarnings("resource")
     public void createTable(String createTableSql) throws SQLException {
         try (Statement statement = connect().createStatement()) {
             statement.execute(createTableSql);
         }
     }
 
+    @SuppressWarnings("resource")
     public int insert(String insertSql, Object... params) throws SQLException {
         try (PreparedStatement statement = connect().prepareStatement(insertSql)) {
             for (int i = 0; i < params.length; i++) {

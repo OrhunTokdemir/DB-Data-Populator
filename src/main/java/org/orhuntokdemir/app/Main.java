@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class Main {
 
-    public static void main(String[] args) {
+     static void main(String[] args) {
         String url = "jdbc:postgresql://localhost:8004/postgres";
         String user = "postgres";
         String password = "postgres";
@@ -19,7 +19,7 @@ public class Main {
             PostgreDataInserter inserter = new PostgreDataInserter(dbManager);
             InsertionManager manager = new InsertionManager(inserter);
 
-            manager.run(100, false);
+            manager.run(2000, false);
         } catch (SQLException e) {
             e.printStackTrace();
         }
