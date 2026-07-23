@@ -1,1 +1,1 @@
-rootProject.name = "Data-Randomizer"
+rootProject.name = "DB-Data-Populator"
