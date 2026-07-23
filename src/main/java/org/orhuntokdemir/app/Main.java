@@ -9,17 +9,17 @@ import java.sql.SQLException;
 
 
 public class Main {
-
-     static void main(String[] args) {
+    public static void main(String[] args) {
         String url = "jdbc:postgresql://localhost:8004/postgres";
         String user = "postgres";
         String password = "postgres";
-
+        //how many records to enter
+        int recordCount = 200;
         try (DbManager dbManager = new PostgreManager(url, user, password)) {
             PostgreDataInserter inserter = new PostgreDataInserter(dbManager);
             InsertionManager manager = new InsertionManager(inserter);
 
-            manager.run(2000, false);
+            manager.run(recordCount, false);
         } catch (SQLException e) {
             e.printStackTrace();
         }
