@@ -23,17 +23,24 @@ public class PostgreDataInserter implements DataInserter {
      */
     @Override
     public void createComprehensiveTable() throws SQLException {
+        /* Drop table if exists to ensure schema matches code */
+        String dropTableSql = "DROP TABLE IF EXISTS test_data CASCADE;";
+        postgresManager.createTable(dropTableSql);
+
         /* First drop type if exists to avoid conflicts */
-        /*String dropTypeSql = "DROP TYPE IF EXISTS gender CASCADE;";
+        String dropTypeSql = "DROP TYPE IF EXISTS gender CASCADE;";
         try {
             postgresManager.createTable(dropTypeSql);
         } catch (SQLException e) {
             // Ignore if type doesn't exist
-        }*/
+        }
 
-        String createTableSql = "--CREATE TYPE IF NOT EXISTS gender AS ENUM ('male', 'female'); " +
-                "CREATE TABLE IF NOT EXISTS test_data (" +
+        String createTypeSql = "CREATE TYPE gender AS ENUM ('male', 'female', 'other');";
+        postgresManager.createTable(createTypeSql);
+
+        String createTableSql = "CREATE TABLE test_data (" +
                 "id SERIAL PRIMARY KEY, " +
+                "col_name VARCHAR(100), " +
                 "col_smallint SMALLINT, " +
                 "tc_kimlik_no CHAR(11) NOT NULL CHECK (tc_kimlik_no ~ '^[0-9]{11}$'), " +
                 "col_integer INTEGER, " +
@@ -107,17 +114,18 @@ public class PostgreDataInserter implements DataInserter {
      */
     private void insertRandomData(int count) throws SQLException {
         String insertSql = "INSERT INTO test_data (" +
-                "col_smallint, tc_kimlik_no, col_integer, col_bigint, col_decimal, col_numeric, " +
+                "col_name, col_smallint, tc_kimlik_no, col_integer, col_bigint, col_decimal, col_numeric, " +
                 "col_real, col_double_precision, col_money, col_varchar, col_char, col_text, col_bpchar, " +
                 "col_bytea, col_timestamp, col_timestamptz, col_date, col_time, col_timetz, col_interval, " +
                 "col_boolean, col_enum, col_point, col_line, col_lseg, col_box, col_path, col_polygon, " +
                 "col_circle, col_cidr, col_inet, col_macaddr, col_bit, col_varbit, col_uuid, col_xml, " +
                 "col_json, col_jsonb, col_array" +
-               ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::money, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+               ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::money, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::interval, ?, ?::gender, ?::point, ?::line, ?::lseg, ?::box, ?::path, ?::polygon, ?::circle, ?::cidr, ?::inet, ?::macaddr, ?::bit(10), ?::varbit(10), ?::uuid, ?::xml, ?::json, ?::jsonb, ?::integer[])";
 
         for (int i = 0; i < count; i++) {
             postgresManager.insert(
                     insertSql,
+                    generator.generateName(),                  // col_name
                     generator.generateSmallint(),              // col_smallint
                     generator.generateTCKN(),                  // tc_kimlik_no
                     generator.generateInt(),                   // col_integer

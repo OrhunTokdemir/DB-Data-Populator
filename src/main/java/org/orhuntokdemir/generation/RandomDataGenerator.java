@@ -190,8 +190,8 @@ public class RandomDataGenerator {
 
     // CIDR (IP CIDR address)
     public String generateCidr() {
-        return String.format("%d.%d.%d.%d/24", random.nextInt(256), random.nextInt(256), 
-                random.nextInt(256), random.nextInt(256));
+        return String.format("%d.%d.%d.0/24", random.nextInt(256), random.nextInt(256), 
+                random.nextInt(256));
     }
 
     // INET (IP address)
@@ -208,22 +208,20 @@ public class RandomDataGenerator {
 
     // BIT (bit string)
     public String generateBit(int length) {
-        StringBuilder bit = new StringBuilder("B'");
+        StringBuilder bit = new StringBuilder();
         for (int i = 0; i < length; i++) {
             bit.append(random.nextBoolean() ? "1" : "0");
         }
-        bit.append("'");
         return bit.toString();
     }
 
     // VARBIT (variable bit string)
     public String generateVarbit(int maxLength) {
-        StringBuilder varbit = new StringBuilder("B'");
+        StringBuilder varbit = new StringBuilder();
         int length = random.nextInt(maxLength - 1) + 1;
         for (int i = 0; i < length; i++) {
             varbit.append(random.nextBoolean() ? "1" : "0");
         }
-        varbit.append("'");
         return varbit.toString();
     }
 
