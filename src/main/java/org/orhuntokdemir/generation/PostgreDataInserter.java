@@ -2,7 +2,6 @@ package org.orhuntokdemir.generation;
 
 import org.orhuntokdemir.DB.PostgreManager;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class PostgreDataInserter implements DataInserter {
     private final PostgreManager postgresManager;
@@ -24,19 +23,25 @@ public class PostgreDataInserter implements DataInserter {
      */
     @Override
     public void createComprehensiveTable() throws SQLException {
-        String createTableSql ="CREATE TYPE gender AS ENUM ('male', 'female'); "+
-                "CREATE TABLE IF NOT EXIST test_data (" +
-                "id SERIAL PRIMARY KEY, "+
+        /* First drop type if exists to avoid conflicts */
+        /*String dropTypeSql = "DROP TYPE IF EXISTS gender CASCADE;";
+        try {
+            postgresManager.createTable(dropTypeSql);
+        } catch (SQLException e) {
+            // Ignore if type doesn't exist
+        }*/
+
+        String createTableSql = "--CREATE TYPE IF NOT EXISTS gender AS ENUM ('male', 'female'); " +
+                "CREATE TABLE IF NOT EXISTS test_data (" +
+                "id SERIAL PRIMARY KEY, " +
                 "col_smallint SMALLINT, " +
-                "tc_kimlik_no CHAR(11) NOT NULL CHECK (tc_kimlik_no ~ '^[0-9]{11}$'), "+
+                "tc_kimlik_no CHAR(11) NOT NULL CHECK (tc_kimlik_no ~ '^[0-9]{11}$'), " +
                 "col_integer INTEGER, " +
                 "col_bigint BIGINT, " +
                 "col_decimal DECIMAL(10, 2), " +
                 "col_numeric NUMERIC(10, 2), " +
                 "col_real REAL, " +
                 "col_double_precision DOUBLE PRECISION, " +
-                "col_serial SERIAL, " +
-                "col_bigserial BIGSERIAL, " +
                 "col_money MONEY, " +
                 "col_varchar VARCHAR(255), " +
                 "col_char CHAR(10), " +
@@ -44,7 +49,7 @@ public class PostgreDataInserter implements DataInserter {
                 "col_bpchar BPCHAR(10), " +
                 "col_bytea BYTEA, " +
                 "col_timestamp TIMESTAMP, " +
-                "col_timestamptz TIMESTAMPT WITH TIME ZONE, " +
+                "col_timestamptz TIMESTAMP WITH TIME ZONE, " +
                 "col_date DATE, " +
                 "col_time TIME, " +
                 "col_timetz TIME WITH TIME ZONE, " +
@@ -70,30 +75,6 @@ public class PostgreDataInserter implements DataInserter {
                 "col_array INTEGER[] " +
                 ")";
 
-        postgresManager.createTable(createTableSql);
-    }
-
-    public void createComprehensiveTable1() throws SQLException {
-        String createTableSql = "CREATE TABLE IF NOT EXISTS test_data (" +
-                "id SERIAL PRIMARY KEY, " +
-                "varchar_col VARCHAR(255), " +
-                "char_col CHAR(20), " +
-                "text_col TEXT, " +
-                "int_col INT, " +
-                "smallint_col SMALLINT, " +
-                "bigint_col BIGINT, " +
-                "real_col REAL, " +
-                "double_col DOUBLE PRECISION, " +
-                "numeric_col NUMERIC(10, 2), " +
-                "boolean_col BOOLEAN, " +
-                "date_col DATE, " +
-                "time_col TIME, " +
-                "timestamp_col TIMESTAMP, " +
-                "name_col VARCHAR(255), " +
-                "email_col VARCHAR(255), " +
-                "phone_col VARCHAR(20), " +
-                "json_col TEXT" +
-                ")";
         postgresManager.createTable(createTableSql);
     }
 
@@ -126,35 +107,60 @@ public class PostgreDataInserter implements DataInserter {
      */
     private void insertRandomData(int count) throws SQLException {
         String insertSql = "INSERT INTO test_data (" +
-                "varchar_col, char_col, text_col, int_col, smallint_col, bigint_col, " +
-                "real_col, double_col, numeric_col, boolean_col, date_col, time_col, " +
-                "timestamp_col, name_col, email_col, phone_col, json_col" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "col_smallint, tc_kimlik_no, col_integer, col_bigint, col_decimal, col_numeric, " +
+                "col_real, col_double_precision, col_money, col_varchar, col_char, col_text, col_bpchar, " +
+                "col_bytea, col_timestamp, col_timestamptz, col_date, col_time, col_timetz, col_interval, " +
+                "col_boolean, col_enum, col_point, col_line, col_lseg, col_box, col_path, col_polygon, " +
+                "col_circle, col_cidr, col_inet, col_macaddr, col_bit, col_varbit, col_uuid, col_xml, " +
+                "col_json, col_jsonb, col_array" +
+               ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::money, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         for (int i = 0; i < count; i++) {
             postgresManager.insert(
                     insertSql,
-                    generator.generateVarchar(255),
-                    generator.generateChar(20),
-                    generator.generateText(),
-                    generator.generateInt(),
-                    generator.generateSmallint(),
-                    generator.generateBigint(),
-                    generator.generateReal(),
-                    generator.generateDouble(),
-                    generator.generateNumeric(10, 2),
-                    generator.generateBoolean(),
-                    generator.generateDate(),
-                    generator.generateTime(),
-                    Timestamp.valueOf(generator.generateTimestamp()),
-                    generator.generateName(),
-                    generator.generateEmail(),
-                    generator.generatePhone(),
-                    generator.generateJson()
+                    generator.generateSmallint(),              // col_smallint
+                    generator.generateTCKN(),                  // tc_kimlik_no
+                    generator.generateInt(),                   // col_integer
+                    generator.generateBigint(),                // col_bigint
+                    generator.generateNumeric(10, 2),          // col_decimal
+                    generator.generateNumeric(10, 2),          // col_numeric
+                    generator.generateReal(),                  // col_real
+                    generator.generateDouble(),                // col_double_precision
+                    generator.generateMoney(),                 // col_money
+                    generator.generateVarchar(255),            // col_varchar
+                    generator.generateChar(10),                // col_char
+                    generator.generateText(),                  // col_text
+                    generator.generateChar(10),                // col_bpchar
+                    generator.generateBytea(),                 // col_bytea
+                    java.sql.Timestamp.valueOf(generator.generateTimestamp()),           // col_timestamp
+                    java.sql.Timestamp.valueOf(generator.generateTimestampTz()),         // col_timestamptz
+                    generator.generateDate(),                  // col_date
+                    generator.generateTime(),                  // col_time
+                    generator.generateTimeTz(),                // col_timetz
+                    generator.generateInterval(),              // col_interval
+                    generator.generateBoolean(),               // col_boolean
+                    generator.generateGender(),                // col_enum
+                    generator.generatePoint(),                 // col_point
+                    generator.generateLine(),                  // col_line
+                    generator.generateLseg(),                  // col_lseg
+                    generator.generateBox(),                   // col_box
+                    generator.generatePath(),                  // col_path
+                    generator.generatePolygon(),               // col_polygon
+                    generator.generateCircle(),                // col_circle
+                    generator.generateCidr(),                  // col_cidr
+                    generator.generateInet(),                  // col_inet
+                    generator.generateMacaddr(),               // col_macaddr
+                    generator.generateBit(10),                 // col_bit
+                    generator.generateVarbit(10),              // col_varbit
+                    generator.generateUUID(),                  // col_uuid
+                    generator.generateXml(),                   // col_xml
+                    generator.generateJson(),                  // col_json
+                    generator.generateJsonb(),                 // col_jsonb
+                    generator.generateIntArray(5)              // col_array
             );
         }
 
-        System.out.println("Successfully inserted " + count + " rows with random data");
+        System.out.println("Successfully inserted " + count + " rows with comprehensive random data");
     }
 }
 
