@@ -19,7 +19,7 @@ public class Main {
             PostgreDataInserter inserter = new PostgreDataInserter(dbManager);
             InsertionManager manager = new InsertionManager(inserter);
 
-            manager.run(1000, false);
+            manager.run(100, false);
         } catch (SQLException e) {
             e.printStackTrace();
         }
