@@ -1,44 +1,53 @@
 package org.orhuntokdemir.generation;
 
-import org.orhuntokdemir.DB.PostgreManager;
+import org.orhuntokdemir.DB.DbManager;
 import java.sql.SQLException;
 
 public class PostgreDataInserter implements DataInserter {
-    private final PostgreManager postgresManager;
+    private final DbManager postgresManager;
     private final RandomDataGenerator generator;
     private int recordCount;
 
-    public PostgreDataInserter(PostgreManager postgresManager) {
+    public PostgreDataInserter(DbManager postgresManager) {
         this.postgresManager = postgresManager;
         this.generator = new RandomDataGenerator();
         this.recordCount = 100; // default value
     }
 
+    @Override
     public void setRecordCount(int count) {
         this.recordCount = count;
     }
 
     /**
-     * Creates a comprehensive test table with all common PostgreSQL data types
+     * Drops the comprehensive test table and its associated types
      */
     @Override
-    public void createComprehensiveTable() throws SQLException {
-        /* Drop table if exists to ensure schema matches code */
+    public void dropComprehensiveTable() throws SQLException {
         String dropTableSql = "DROP TABLE IF EXISTS test_data CASCADE;";
         postgresManager.createTable(dropTableSql);
 
-        /* First drop type if exists to avoid conflicts */
         String dropTypeSql = "DROP TYPE IF EXISTS gender CASCADE;";
         try {
             postgresManager.createTable(dropTypeSql);
         } catch (SQLException e) {
             // Ignore if type doesn't exist
         }
+    }
 
-        String createTypeSql = "CREATE TYPE gender AS ENUM ('male', 'female', 'other');";
+    /**
+     * Creates a comprehensive test table with all common PostgreSQL data types if it doesn't exist
+     */
+    @Override
+    public void createComprehensiveTable() throws SQLException {
+        /* Ensure gender type exists */
+        String createTypeSql = "DO $$ BEGIN " +
+                "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gender') THEN " +
+                "CREATE TYPE gender AS ENUM ('male', 'female', 'other'); " +
+                "END IF; END $$;";
         postgresManager.createTable(createTypeSql);
 
-        String createTableSql = "CREATE TABLE test_data (" +
+        String createTableSql = "CREATE TABLE IF NOT EXISTS test_data (" +
                 "id SERIAL PRIMARY KEY, " +
                 "col_name VARCHAR(100), " +
                 "col_smallint SMALLINT, " +
@@ -96,12 +105,16 @@ public class PostgreDataInserter implements DataInserter {
     }
 
     /**
-     * Creates the table and inserts comprehensive random data in one operation
+     * Creates the table (optionally dropping it first) and inserts comprehensive random data
      *
+     * @param dropFirst if true, drops the table before creating/inserting
      * @throws SQLException if database operation fails
      */
     @Override
-    public void createAndInsertComprehensiveData() throws SQLException {
+    public void createAndInsertComprehensiveData(boolean dropFirst) throws SQLException {
+        if (dropFirst) {
+            dropComprehensiveTable();
+        }
         createComprehensiveTable();
         insertComprehensiveData();
     }

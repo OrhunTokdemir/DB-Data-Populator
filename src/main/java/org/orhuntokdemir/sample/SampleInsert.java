@@ -33,9 +33,9 @@ public class SampleInsert {
             // Optional: Set number of records to insert (default is 100)
             inserter.setRecordCount(50);
 
-            // Option 1: Create table and insert data in one operation
+            // Option 1: Create table and insert data in one operation (dropping table if exists)
             System.out.println("Creating comprehensive test table and inserting 50 rows...");
-            inserter.createAndInsertComprehensiveData();
+            inserter.createAndInsertComprehensiveData(true);
 
             System.out.println("✓ Sample insert completed successfully!");
             System.out.println("  - Table: test_data");

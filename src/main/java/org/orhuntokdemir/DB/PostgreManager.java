@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class PostgreManager implements AutoCloseable {
+public class PostgreManager implements DbManager {
     private final String url;
     private final String username;
     private final String password;

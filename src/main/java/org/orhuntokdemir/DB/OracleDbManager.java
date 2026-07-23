@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class OracleDbManager implements AutoCloseable {
+public class OracleDbManager implements DbManager {
     private final String url;
     private final String username;
     private final String password;
