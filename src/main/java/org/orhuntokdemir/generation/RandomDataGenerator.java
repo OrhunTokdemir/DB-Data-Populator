@@ -20,12 +20,46 @@ public class RandomDataGenerator {
         String text = faker.lorem().word();
         return text.substring(0, Math.min(text.length(), maxLength));
     }
-    // Generate a random Turkish Identification Number (TCKN)
-    public String generateTCKN() {
-        StringBuilder tckn = new StringBuilder();
-        for (int i = 0; i < 11; i++) {
-            tckn.append(random.nextInt(10));
+    // Generate a random Turkish Identification Number (TCKN). All TCKNS are randomly generated and do not correspond to real individuals.
+    public String generateFakeTCKN() {
+        StringBuilder tckn = new StringBuilder(11);
+
+        int[] digit = new int[11];
+        int sumOdd=0;
+        int sumEven=0;
+
+        //First digit cannot be 0, so we generate a random number between 1 and 9 for the first digit
+        digit[0]= random.nextInt(9) + 1; // First digit cannot be 0
+        tckn.append(digit[0]);
+
+        //Generates the next 8 digits randomly and append them
+        for(int i=1;i<9;i++){
+            digit[i]= random.nextInt(10);
+            tckn.append(digit[i]);
         }
+
+        //Calculates the sum of odd and even indexed digits (0-based index) for the first 9 digits
+        for(int i=0;i<9;i++){
+            if(i%2==0){
+                sumOdd+=digit[i];
+            }else{
+                sumEven+=digit[i];
+            }
+        }
+
+        //Calculates the 10th digit based on the TCKN rules, which is calculated based on the first 9 digits
+        digit[9] = (7 * sumOdd - sumEven) % 10;
+
+        // If the tenth digit is negative, we add 10 to make it positive
+        if(digit[9]<0){
+            digit[9] +=10;
+        }
+        tckn.append(digit[9]);
+
+        //Calculates the 11th digit based on the TCKN rules, which is calculated based on the first 10 digits
+        digit[10] = (sumOdd + sumEven + digit[9]) % 10;
+        tckn.append(digit[10]);
+
         return tckn.toString();
     }
     public String generateText() {
