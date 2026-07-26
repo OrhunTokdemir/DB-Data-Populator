@@ -140,7 +140,7 @@ public class PostgreDataInserter implements DataInserter {
                     insertSql,
                     generator.generateName(),                  // col_name
                     generator.generateSmallint(),              // col_smallint
-                    generator.generateTCKN(),                  // tc_kimlik_no
+                    generator.generateFakeTCKN(),                  // tc_kimlik_no
                     generator.generateInt(),                   // col_integer
                     generator.generateBigint(),                // col_bigint
                     generator.generateNumeric(10, 2),          // col_decimal
