@@ -1,5 +1,4 @@
 package org.orhuntokdemir.app;
-//import net.datafaker.Faker;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.orhuntokdemir.DB.DbManager;
 import org.orhuntokdemir.DB.PostgreManager;
@@ -17,7 +16,7 @@ public class Main {
         String user = dotenv.get("POSTGRES_USER") != null ? dotenv.get("POSTGRES_USER") : "postgres";
         String password = dotenv.get("POSTGRES_PASSWORD") != null ? dotenv.get("POSTGRES_PASSWORD") : "postgres";
         //how many records to enter
-        int recordCount = 10000;
+        int recordCount = 100;
         try (DbManager dbManager = new PostgreManager(url, user, password)) {
             PostgreDataInserter inserter = new PostgreDataInserter(dbManager);
             InsertionManager manager = new InsertionManager(inserter);
