@@ -137,6 +137,8 @@ public class RandomDataGenerator {
         return java.util.UUID.randomUUID().toString();
     }
 
+    //ROWID
+
     // JSON (as string)
     public String generateJson() {
         return "{\"name\": \"" + generateName() + "\", \"email\": \"" + generateEmail() + "\"}";
@@ -275,10 +277,80 @@ public class RandomDataGenerator {
         return array.toString();
     }
 
-    // XML (as string)
+
+    // XML
     public String generateXml() {
-        return String.format("<record><name>%s</name><email>%s</email></record>", generateName(), generateEmail());
+        return "<root><element>" + faker.lorem().word() + "</element></root>";
     }
+
+    // Oracle ANYDATA-compatible value.
+    // Use with SYS.ANYDATA.ConvertVarchar2(?) in the INSERT statement.
+    public String generateAnyDataVarchar2() {
+        return generateVarchar(100);
+    }
+
+    // Oracle ANYTYPE
+    public String generateAnyType() {
+        return "SYS.ANYTYPE";
+    }
+
+    // Oracle ANYDATASET
+    public String generateAnyDataSet() {
+        return null; // Very complex to generate randomly without specific schema
+    }
+
+    // Oracle HTTPURITYPE-compatible URI.
+    // Use with HTTPURITYPE(?) in the INSERT statement.
+    public String generateHttpUri() {
+        return "https://example.com/" + faker.internet().slug();
+    }
+
+    // Oracle XDBURIType-compatible URI path.
+    // Use with XDBURIType(?) in the INSERT statement.
+    public String generateXdbUri() {
+        return "/public/" + faker.internet().slug() + ".xml";
+    }
+
+    // Oracle DBURIType-compatible URI.
+    // Use with DBURIType(?) in the INSERT statement.
+    public String generateDbUri() {
+        return "/PUBLIC/TEST_DATA/ROW[" + (random.nextInt(1000) + 1) + "]";
+    }
+
+    // Oracle Spatial SDO_GEOMETRY-compatible point arguments.
+    // Use with SDO_GEOMETRY(2001, 4326, SDO_POINT_TYPE(?, ?, NULL), NULL, NULL).
+    public double generateLongitude() {
+        return -180 + (360 * random.nextDouble());
+    }
+
+    public double generateLatitude() {
+        return -90 + (180 * random.nextDouble());
+    }
+
+    public String generateSdoGeometry() {
+        return String.format("SDO_GEOMETRY(2001, 4326, SDO_POINT_TYPE(%.2f, %.2f, NULL), NULL, NULL)",
+                generateLongitude(), generateLatitude());
+    }
+
+    public String generateSdoTopoGeometry() {
+        return null; // Topo geometry requires existing topology in the DB
+    }
+
+    public String generateSdoGeoraster() {
+        return null; // GeoRaster is very complex and requires specific setup
+    }
+
+    public String generateRowId() {
+        // Mocking a ROWID format: AAAR1+AAEAAAAAgAAB
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 18; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
+    // ENUM value (gender)
 
     // ENUM value (gender)
     public String generateGender() {
