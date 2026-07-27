@@ -1,7 +1,5 @@
 package org.orhuntokdemir.generation;
 import org.orhuntokdemir.DB.DbManager;
-
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class OracleDbInserter implements DataInserter {
@@ -89,37 +87,51 @@ public class OracleDbInserter implements DataInserter {
                 "col_numeric, col_float, col_long, COL_DATE, col_timestamp, " +
                 "col_interval, col_rowid, col_urowid, col_char, col_nchar, " +
                 "col_clob, col_nclob, col_blob, col_raw, col_binary_float, " +
-                "col_binary_double" +
+                "col_binary_double, col_any_type, col_any_data, col_any_data_set, col_xml_type, " +
+                "col_http_uri_type, col_xdburi_type, col_dburi_type, col_sdo_geometry, col_sdo_topo_geometry, " +
+                "col_sdo_georaster" +
                 ") VALUES (" +
-                "?, ?, ?, ?, ?, " +
-                "?, ?, ?, ?, ?, " +
-                "TO_DSINTERVAL(?), ?, ?, ?, ?, " +
-                "?, ?, ?, ?, ?, " +
-                "?" +
+                "?, ?, ?, ?, ?, " + // 1-5
+                "?, ?, ?, ?, ?, " + // 6-10
+                "TO_DSINTERVAL(?), ?, ?, ?, ?, " + // 11-15 (11 is interval)
+                "?, ?, ?, ?, ?, " + // 16-20
+                "?, SYS.ANYDATA.ConvertVarchar2(?), ?, ?, XMLTYPE(?), " + // 21-25 (22 is any_type, 23 any_data, 25 is xml)
+                "HTTPURITYPE(?), XDBURIType(?), DBURIType(?), ?, ?, " + // 26-30
+                "?" + // 31
                 ")";
         for(int i = 0; i < recordCount; i++) {
             oracleDbManager.insert(insertSQL,
-                    generator.generateVarchar(100),                    // col_varchar
-                    generator.generateVarchar(100),                    // col_nvarchar2
-                    generator.generateSmallint(),                      // col_smallint
-                    generator.generateFakeTCKN(),                      // tc_kimlik_no
-                    generator.generateBigint(),                        // col_number_10
-                    generator.generateNumeric(10, 2),                  // col_numeric
-                    generator.generateReal(),                          // col_float
-                    generator.generateText(),                          // col_long
-                    java.sql.Date.valueOf(generator.generateDate()),   // COL_DATE
-                    java.sql.Timestamp.valueOf(generator.generateTimestamp()), // col_timestamp
-                    generator.generateInterval(),                      // col_interval
-                    null,                                              // col_rowid
-                    null,                                              // col_urowid
-                    generator.generateChar(10),                        // col_char
-                    generator.generateChar(10),                        // col_nchar
-                    generator.generateText(),                          // col_clob
-                    generator.generateText(),                          // col_nclob
-                    generator.generateBytea(),                         // col_blob
-                    generator.generateBytea(),                         // col_raw
-                    generator.generateReal(),                          // col_binary_float
-                    generator.generateDouble()                         // col_binary_double
+                    generator.generateVarchar(100),                    // col_varchar (1)
+                    generator.generateVarchar(100),                    // col_nvarchar2 (2)
+                    generator.generateSmallint(),                      // col_smallint (3)
+                    generator.generateFakeTCKN(),                      // tc_kimlik_no (4)
+                    generator.generateBigint(),                        // col_number_10 (5)
+                    generator.generateNumeric(10, 2),                  // col_numeric (6)
+                    generator.generateReal(),                          // col_float (7)
+                    generator.generateText(),                          // col_long (8)
+                    java.sql.Date.valueOf(generator.generateDate()),   // COL_DATE (9)
+                    java.sql.Timestamp.valueOf(generator.generateTimestamp()), // col_timestamp (10)
+                    generator.generateInterval(),                      // col_interval (11)
+                    generator.generateRowId(),                         // col_rowid (12)
+                    generator.generateRowId(),                         // col_urowid (13)
+                    generator.generateChar(10),                        // col_char (14)
+                    generator.generateChar(10),                        // col_nchar (15)
+                    generator.generateText(),                          // col_clob (16)
+                    generator.generateText(),                          // col_nclob (17)
+                    generator.generateBytea(),                         // col_blob (18)
+                    generator.generateBytea(),                         // col_raw (19)
+                    generator.generateReal(),                          // col_binary_float (20)
+                    generator.generateDouble(),                        // col_binary_double (21)
+                    null,                                              // col_any_type (22)
+                    generator.generateAnyDataVarchar2(),               // col_any_data (23)
+                    null,                                              // col_any_data_set (24)
+                    generator.generateXml(),                           // col_xml_type (25)
+                    generator.generateHttpUri(),                       // col_http_uri_type (26)
+                    generator.generateXdbUri(),                        // col_xdburi_type (27)
+                    generator.generateDbUri(),                         // col_dburi_type (28)
+                    null,                                              // col_sdo_geometry (29)
+                    null,                                              // col_sdo_topo_geometry (30)
+                    null                                               // col_sdo_georaster (31)
             );
         }
     }
