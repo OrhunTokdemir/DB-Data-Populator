@@ -43,6 +43,11 @@ public class PostgreManager implements DbManager {
     }
 
     @Override
+    public boolean checkIfTableExists(String tableName) throws SQLException {
+        return false;
+    }
+
+    @Override
     public void close() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             connection.close();
