@@ -33,9 +33,8 @@ public class OracleDbInserter implements DataInserter {
         }
         System.out.println("Dropping existing table " + tableName + "...");
         String table = tableName.toUpperCase();
-        String dropBlock = "" +
-                "BEGIN\n" +
-                "  EXECUTE IMMEDIATE 'DROP TABLE " + table + " CASCADE CONSTRAINTS';\n" +
+        String dropBlock = "BEGIN\n" +
+                " EXECUTE IMMEDIATE 'DROP TABLE " + table + " CASCADE CONSTRAINTS';\n" +
                 "EXCEPTION\n" +
                 "  WHEN OTHERS THEN\n" +
                 "    -- ORA-00942: table or view does not exist\n" +
