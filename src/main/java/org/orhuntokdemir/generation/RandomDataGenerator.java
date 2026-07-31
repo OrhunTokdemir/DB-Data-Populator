@@ -146,7 +146,13 @@ public class RandomDataGenerator {
 
     // BYTEA (byte array)
     public byte[] generateBytea() {
-        byte[] bytes = new byte[20];
+        byte[] bytes = new byte[20]; // Default length of 20 bytes
+        random.nextBytes(bytes);
+        return bytes;
+    }
+
+    public byte[] generateBytea(int length) {
+        byte[] bytes = new byte[length];
         random.nextBytes(bytes);
         return bytes;
     }
