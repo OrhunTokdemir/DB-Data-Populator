@@ -10,18 +10,18 @@ import java.sql.SQLException;
 
 
 public class Main {
-    public static void main(String[] args) {
+     static void main(String[] args) {
         String url = "jdbc:postgresql://localhost:8003/postgres";//Change this to your database URL if needed
         Dotenv dotenv = Dotenv.load();
         String user = dotenv.get("POSTGRES_USER") != null ? dotenv.get("POSTGRES_USER") : "postgres";
         String password = dotenv.get("POSTGRES_PASSWORD") != null ? dotenv.get("POSTGRES_PASSWORD") : "postgres";
         //how many records to enter
-        int recordCount = 100;
+        int recordCount = 10000;
         try (DbManager dbManager = new PostgreManager(url, user, password)) {
             PostgreDataInserter inserter = new PostgreDataInserter(dbManager);
             InsertionManager manager = new InsertionManager(inserter);
 
-            manager.run(recordCount, false);
+            manager.run(recordCount, true);
         } catch (SQLException e) {
             e.printStackTrace();
         }
