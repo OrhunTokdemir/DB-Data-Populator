@@ -48,13 +48,26 @@ public class OracleDbManager implements DbManager {
     public boolean checkIfTableExists(String tableName) throws SQLException {
         Connection conn = connect();
         DatabaseMetaData metaData = conn.getMetaData();
-        String schema = conn.getSchema();
-        if (schema == null || schema.isBlank()) {
-            schema = username;
+        String currentSchema = conn.getSchema();
+
+        // 1. Try with current schema first (most common case)
+        if (currentSchema != null && !currentSchema.isBlank()) {
+            try (ResultSet rs = metaData.getTables(null, currentSchema.toUpperCase(), tableName.toUpperCase(), new String[]{"TABLE", "VIEW", "SYNONYM"})) {
+                if (rs.next()) return true;
+            }
         }
 
-        try (ResultSet resultSet = metaData.getTables(null, schema.toUpperCase(), tableName.toUpperCase(), new String[]{"TABLE", "VIEW"})) {
-            return resultSet.next();
+        // 2. Try with username as schema
+        String userSchema = username;
+        if (userSchema != null && !userSchema.equalsIgnoreCase(currentSchema)) {
+            try (ResultSet rs = metaData.getTables(null, userSchema.toUpperCase(), tableName.toUpperCase(), new String[]{"TABLE", "VIEW", "SYNONYM"})) {
+                if (rs.next()) return true;
+            }
+        }
+
+        // 3. Fallback: search all accessible schemas
+        try (ResultSet rs = metaData.getTables(null, null, tableName.toUpperCase(), new String[]{"TABLE", "VIEW", "SYNONYM"})) {
+            return rs.next();
         }
     }
 
