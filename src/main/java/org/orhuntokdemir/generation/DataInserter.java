@@ -9,6 +9,9 @@ public interface DataInserter {
     //drop specified table if exists
     void dropComprehensiveTable() throws SQLException;
 
+    //drop specified table if exists
+    void dropComprehensiveTable(String tableName) throws SQLException;
+
     //create comprehensive table with the respective columns and data types
     void createComprehensiveTable() throws SQLException;
 
