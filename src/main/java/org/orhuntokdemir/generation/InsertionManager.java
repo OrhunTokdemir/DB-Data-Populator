@@ -26,12 +26,6 @@ public class InsertionManager {
         try {
             System.out.println("Initializing insertion process...");
             inserter.setRecordCount(recordCount);
-
-            if (dropFirst) {
-                inserter.dropComprehensiveTable();
-                System.out.println("Dropping existing table as requested...");
-            }
-
             System.out.println("Starting managed insertion of " + recordCount + " records...");
             inserter.createAndInsertComprehensiveData(dropFirst);
             System.out.println("✓ Successfully managed and completed insertions.");
