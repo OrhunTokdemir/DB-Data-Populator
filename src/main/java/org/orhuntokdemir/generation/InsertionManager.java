@@ -28,6 +28,7 @@ public class InsertionManager {
             inserter.setRecordCount(recordCount);
 
             if (dropFirst) {
+                inserter.dropComprehensiveTable();
                 System.out.println("Dropping existing table as requested...");
             }
 
