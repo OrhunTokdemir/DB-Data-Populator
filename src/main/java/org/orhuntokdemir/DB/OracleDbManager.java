@@ -1,7 +1,9 @@
 package org.orhuntokdemir.DB;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -38,6 +40,21 @@ public class OracleDbManager implements DbManager {
                 statement.setObject(i + 1, params[i]);
             }
             return statement.executeUpdate();
+        }
+    }
+
+    @SuppressWarnings("resource")
+    @Override
+    public boolean checkIfTableExists(String tableName) throws SQLException {
+        Connection conn = connect();
+        DatabaseMetaData metaData = conn.getMetaData();
+        String schema = conn.getSchema();
+        if (schema == null || schema.isBlank()) {
+            schema = username;
+        }
+
+        try (ResultSet resultSet = metaData.getTables(null, schema.toUpperCase(), tableName.toUpperCase(), new String[]{"TABLE", "VIEW"})) {
+            return resultSet.next();
         }
     }
 
