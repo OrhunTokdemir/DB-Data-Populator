@@ -31,6 +31,7 @@ public class OracleDbInserter implements DataInserter {
             System.out.println("Table " + tableName + " does not exist, skipping drop.");
             return;
         }
+        System.out.println("Dropping existing table " + tableName + "...");
         String table = tableName.toUpperCase();
         String dropBlock = "" +
                 "BEGIN\n" +
@@ -42,8 +43,10 @@ public class OracleDbInserter implements DataInserter {
                 "      RAISE;\n" +
                 "    END IF;\n" +
                 "END;";
+        System.out.println("Executing drop table statement...");
         // Use createTable which executes arbitrary DDL/PLSQL on the connection
         oracleDbManager.createTable(dropBlock);
+        System.out.println("Finished dropping table " + tableName);
     }
 
     @Override
@@ -96,10 +99,15 @@ public class OracleDbInserter implements DataInserter {
 
     @Override
     public void createAndInsertComprehensiveData(boolean dropFirst) throws SQLException {if (dropFirst) {
+            System.out.println("Checking if table table already exists...");
             dropComprehensiveTable();
         }
+        System.out.println("Creating table...");
         createComprehensiveTable();
+        System.out.println("Finished creating table");
+        System.out.println("Inserting data...");
         insertComprehensiveData();
+        System.out.println("Finished inserting data");
     }
 
     private void insertRandomData(int recordCount) throws SQLException {
