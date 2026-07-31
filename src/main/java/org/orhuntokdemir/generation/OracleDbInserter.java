@@ -20,12 +20,31 @@ public class OracleDbInserter implements DataInserter {
 
     @Override
     public void dropComprehensiveTable() throws SQLException {
-        String dropTableSql = "DROP TABLE IF EXISTS test_data CASCADE;";
-        oracleDbManager.createTable(dropTableSql);
+        // Delegate to the named-table overload using the default table name.
 
-
+        dropComprehensiveTable("TEST_DATA");
     }
 
+    // Overload that drops a specific table name in an Oracle-safe way.
+    public void dropComprehensiveTable(String tableName) throws SQLException {
+        if(!oracleDbManager.checkIfTableExists(tableName)) {
+            System.out.println("Table " + tableName + " does not exist, skipping drop.");
+            return;
+        }
+        String table = tableName.toUpperCase();
+        String dropBlock = "" +
+                "BEGIN\n" +
+                "  EXECUTE IMMEDIATE 'DROP TABLE " + table + " CASCADE CONSTRAINTS';\n" +
+                "EXCEPTION\n" +
+                "  WHEN OTHERS THEN\n" +
+                "    -- ORA-00942: table or view does not exist\n" +
+                "    IF SQLCODE <> -942 THEN\n" +
+                "      RAISE;\n" +
+                "    END IF;\n" +
+                "END;";
+        // Use createTable which executes arbitrary DDL/PLSQL on the connection
+        oracleDbManager.createTable(dropBlock);
+    }
 
     @Override
     public void createComprehensiveTable() throws SQLException {
@@ -53,8 +72,10 @@ public class OracleDbInserter implements DataInserter {
                 "col_blob BLOB, " +
                 "col_raw RAW(10), " +
                 "col_binary_float BINARY_FLOAT, " +
-                "col_binary_double BINARY_DOUBLE, " +
-                "col_any_type ANYTYPE, " +
+                "col_binary_double BINARY_DOUBLE " +
+                //Additional columns for Oracle-specific data types
+                /*,
+                col_any_type ANYTYPE, " +
                 "col_any_data ANYDATA, " +
                 "col_any_data_set ANYDATASET, " +
                 "col_xml_type XMLTYPE, " +
@@ -63,7 +84,7 @@ public class OracleDbInserter implements DataInserter {
                 "col_dburi_type DBURIType, " +
                 "col_sdo_geometry SDO_GEOMETRY, " +
                 "col_sdo_topo_geometry SDO_TOPO_GEOMETRY, " +
-                "col_sdo_georaster SDO_GEORASTER" +
+                "col_sdo_georaster SDO_GEORASTER" +*/
                 ")";
         oracleDbManager.createTable(createTableSQL);
     }
@@ -85,19 +106,19 @@ public class OracleDbInserter implements DataInserter {
         String insertSQL = "INSERT INTO test_data (" +
                 "col_varchar, col_nvarchar2, col_smallint, tc_kimlik_no, col_number_10, " +
                 "col_numeric, col_float, col_long, COL_DATE, col_timestamp, " +
-                "col_interval, col_rowid, col_urowid, col_char, col_nchar, " +
+                "col_interval, col_char, col_nchar, " +
                 "col_clob, col_nclob, col_blob, col_raw, col_binary_float, " +
-                "col_binary_double, col_any_type, col_any_data, col_any_data_set, col_xml_type, " +
+                "col_binary_double "+
+                //Additional columns for Oracle-specific data types
+                /*", col_any_type, col_any_data, col_any_data_set, col_xml_type, " +
                 "col_http_uri_type, col_xdburi_type, col_dburi_type, col_sdo_geometry, col_sdo_topo_geometry, " +
-                "col_sdo_georaster" +
+                "col_sdo_georaster" +*/
                 ") VALUES (" +
                 "?, ?, ?, ?, ?, " + // 1-5
                 "?, ?, ?, ?, ?, " + // 6-10
-                "TO_DSINTERVAL(?), ?, ?, ?, ?, " + // 11-15 (11 is interval)
+                "TO_DSINTERVAL(?), ?, ?, " + // 11-15 (11 is interval)
                 "?, ?, ?, ?, ?, " + // 16-20
-                "?, SYS.ANYDATA.ConvertVarchar2(?), ?, ?, XMLTYPE(?), " + // 21-25 (22 is any_type, 23 any_data, 25 is xml)
-                "HTTPURITYPE(?), XDBURIType(?), DBURIType(?), ?, ?, " + // 26-30
-                "?" + // 31
+                "?" + // 21
                 ")";
         for(int i = 0; i < recordCount; i++) {
             oracleDbManager.insert(insertSQL,
@@ -105,24 +126,25 @@ public class OracleDbInserter implements DataInserter {
                     generator.generateVarchar(100),                    // col_nvarchar2 (2)
                     generator.generateSmallint(),                      // col_smallint (3)
                     generator.generateFakeTCKN(),                      // tc_kimlik_no (4)
-                    generator.generateBigint(),                        // col_number_10 (5)
+                    generator.generateBigint() % Math.pow(10, 10),     // col_number_10 (5)
                     generator.generateNumeric(10, 2),                  // col_numeric (6)
                     generator.generateReal(),                          // col_float (7)
                     generator.generateText(),                          // col_long (8)
                     java.sql.Date.valueOf(generator.generateDate()),   // COL_DATE (9)
                     java.sql.Timestamp.valueOf(generator.generateTimestamp()), // col_timestamp (10)
                     generator.generateInterval(),                      // col_interval (11)
-                    generator.generateRowId(),                         // col_rowid (12)
-                    generator.generateRowId(),                         // col_urowid (13)
+                    //generator.generateRowId(),                         // col_rowid (12)
+                    //generator.generateRowId(),                         // col_urowid (13)
                     generator.generateChar(10),                        // col_char (14)
                     generator.generateChar(10),                        // col_nchar (15)
                     generator.generateText(),                          // col_clob (16)
                     generator.generateText(),                          // col_nclob (17)
                     generator.generateBytea(),                         // col_blob (18)
-                    generator.generateBytea(),                         // col_raw (19)
+                    generator.generateBytea(10),                         // col_raw (19)
                     generator.generateReal(),                          // col_binary_float (20)
-                    generator.generateDouble(),                        // col_binary_double (21)
-                    null,                                              // col_any_type (22)
+                    generator.generateDouble()                       // col_binary_double (21)
+                    //Additional columns for Oracle-specific data types
+                    /*null,                                              // col_any_type (22)
                     generator.generateAnyDataVarchar2(),               // col_any_data (23)
                     null,                                              // col_any_data_set (24)
                     generator.generateXml(),                           // col_xml_type (25)
@@ -132,7 +154,9 @@ public class OracleDbInserter implements DataInserter {
                     null,                                              // col_sdo_geometry (29)
                     null,                                              // col_sdo_topo_geometry (30)
                     null                                               // col_sdo_georaster (31)
+                    */
             );
+
         }
     }
 
