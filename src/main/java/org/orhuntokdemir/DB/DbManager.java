@@ -7,6 +7,7 @@ public interface DbManager extends AutoCloseable {
     Connection connect() throws SQLException;
     void createTable(String createTableSql) throws SQLException;
     int insert(String insertSql, Object... params) throws SQLException;
+    boolean checkIfTableExists(String tableName) throws SQLException;
     @Override
     void close() throws SQLException;
 }
