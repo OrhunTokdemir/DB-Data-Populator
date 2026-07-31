@@ -24,10 +24,36 @@ public class PostgreDataInserter implements DataInserter {
      */
     @Override
     public void dropComprehensiveTable() throws SQLException {
-        String dropTableSql = "DROP TABLE IF EXISTS test_data CASCADE;";
+        String dropTableSql = "DROP TABLE IF EXISTS test.test_data CASCADE;";
         postgresManager.createTable(dropTableSql);
 
-        String dropTypeSql = "DROP TYPE IF EXISTS gender CASCADE;";
+        // Check if the table exists in the public schema as well and drop it if it does
+        String dropPublicTableSql = "DROP TABLE IF EXISTS test_data CASCADE;";
+        postgresManager.createTable(dropPublicTableSql);
+
+        String dropTypeSql = "DROP TYPE IF EXISTS test.gender CASCADE;";
+        try {
+            postgresManager.createTable(dropTypeSql);
+        } catch (SQLException e) {
+            // Ignore if type doesn't exist
+        }
+
+        // Also drop public gender type if it exists
+        String dropPublicTypeSql = "DROP TYPE IF EXISTS gender CASCADE;";
+        try {
+            postgresManager.createTable(dropPublicTypeSql);
+        } catch (SQLException e) {
+            // Ignore if type doesn't exist
+        }
+    }
+
+    @Override
+    public void dropComprehensiveTable(String tableName) throws SQLException {
+        String dropTableSql = "DROP TABLE IF EXISTS " + tableName + " CASCADE;";
+        postgresManager.createTable(dropTableSql);
+
+        // Also drop associated type if it exists
+        String dropTypeSql = "DROP TYPE IF EXISTS test.gender CASCADE;";
         try {
             postgresManager.createTable(dropTypeSql);
         } catch (SQLException e) {
@@ -40,14 +66,17 @@ public class PostgreDataInserter implements DataInserter {
      */
     @Override
     public void createComprehensiveTable() throws SQLException {
-        /* Ensure gender type exists */
+        /* Ensure test schema and gender type exist */
+        String createSchemaSql = "CREATE SCHEMA IF NOT EXISTS test;";
+        postgresManager.createTable(createSchemaSql);
+
         String createTypeSql = "DO $$ BEGIN " +
-                "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gender') THEN " +
-                "CREATE TYPE gender AS ENUM ('male', 'female', 'other'); " +
+                "IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE t.typname = 'gender' AND n.nspname = 'test') THEN " +
+                "CREATE TYPE test.gender AS ENUM ('male', 'female', 'other'); " +
                 "END IF; END $$;";
         postgresManager.createTable(createTypeSql);
 
-        String createTableSql = "CREATE TABLE IF NOT EXISTS test_data (" +
+        String createTableSql = "CREATE TABLE IF NOT EXISTS test.test_data (" +
                 "id SERIAL PRIMARY KEY, " +
                 "col_name VARCHAR(100), " +
                 "col_smallint SMALLINT, " +
@@ -71,7 +100,7 @@ public class PostgreDataInserter implements DataInserter {
                 "col_timetz TIME WITH TIME ZONE, " +
                 "col_interval INTERVAL, " +
                 "col_boolean BOOLEAN, " +
-                "col_enum gender, " +
+                "col_enum test.gender, " +
                 "col_point POINT, " +
                 "col_line LINE, " +
                 "col_lseg LSEG, " +
@@ -89,7 +118,7 @@ public class PostgreDataInserter implements DataInserter {
                 "col_json JSON, " +
                 "col_jsonb JSONB, " +
                 "col_array INTEGER[] " +
-                ")";
+                ");";
 
         postgresManager.createTable(createTableSql);
     }
@@ -126,14 +155,14 @@ public class PostgreDataInserter implements DataInserter {
      * @throws SQLException if database operation fails
      */
     private void insertRandomData(int count) throws SQLException {
-        String insertSql = "INSERT INTO test_data (" +
+        String insertSql = "INSERT INTO test.test_data (" +
                 "col_name, col_smallint, tc_kimlik_no, col_integer, col_bigint, col_decimal, col_numeric, " +
                 "col_real, col_double_precision, col_money, col_varchar, col_char, col_text, col_bpchar, " +
                 "col_bytea, col_timestamp, col_timestamptz, col_date, col_time, col_timetz, col_interval, " +
                 "col_boolean, col_enum, col_point, col_line, col_lseg, col_box, col_path, col_polygon, " +
                 "col_circle, col_cidr, col_inet, col_macaddr, col_bit, col_varbit, col_uuid, col_xml, " +
                 "col_json, col_jsonb, col_array" +
-               ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::money, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::interval, ?, ?::gender, ?::point, ?::line, ?::lseg, ?::box, ?::path, ?::polygon, ?::circle, ?::cidr, ?::inet, ?::macaddr, ?::bit(10), ?::varbit(10), ?::uuid, ?::xml, ?::json, ?::jsonb, ?::integer[])";
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::money, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::interval, ?, ?::test.gender, ?::point, ?::line, ?::lseg, ?::box, ?::path, ?::polygon, ?::circle, ?::cidr, ?::inet, ?::macaddr, ?::bit(10), ?::varbit(10), ?::uuid, ?::xml, ?::json, ?::jsonb, ?::integer[])";
 
         for (int i = 0; i < count; i++) {
             postgresManager.insert(
@@ -184,4 +213,3 @@ public class PostgreDataInserter implements DataInserter {
         System.out.println("Successfully inserted " + count + " rows with comprehensive random data");
     }
 }
-
